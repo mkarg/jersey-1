@@ -37,6 +37,10 @@ import org.glassfish.jersey.internal.util.PropertyAlias;
 @PropertiesClass
 public final class ServerProperties {
 
+    public static final String HTTP_SERVER_PROVIDER = "jersey.config.server.HttpServerProvider";
+
+    public static final String HTTP_SERVER_ANNIHILATOR = "jersey.config.server.HttpServerAnnihilator";
+
     /**
      * Defines one or more packages that contain application-specific resources and
      * providers.

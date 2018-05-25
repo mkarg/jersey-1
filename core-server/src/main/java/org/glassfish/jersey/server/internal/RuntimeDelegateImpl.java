@@ -16,11 +16,23 @@
 
 package org.glassfish.jersey.server.internal;
 
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+
+import javax.ws.rs.JAXRS;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.internal.AbstractRuntimeDelegate;
 import org.glassfish.jersey.message.internal.MessagingBinders;
 import org.glassfish.jersey.server.ContainerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 /**
  * Server-side implementation of JAX-RS {@link javax.ws.rs.ext.RuntimeDelegate}.
@@ -46,4 +58,61 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
         }
         return ContainerFactory.createContainer(endpointType, application);
     }
+
+    @Override
+    public JAXRS.Configuration.Builder createConfigurationBuilder() {
+        return new JAXRS.Configuration.Builder() {
+            private final Map<String, Object> properties = new HashMap<>();
+
+            {
+                this.properties.put(JAXRS.Configuration.PROTOCOL, "HTTP");
+                this.properties.put(JAXRS.Configuration.HOST, "localhost");
+                this.properties.put(JAXRS.Configuration.PORT, 80);
+                this.properties.put(JAXRS.Configuration.ROOT_PATH, "/");
+            }
+
+            @Override
+            public final JAXRS.Configuration.Builder property(final String name, final Object value) {
+                this.properties.put(name, value);
+                return this;
+            }
+
+            @Override
+            public final JAXRS.Configuration build() {
+                return new JAXRS.Configuration() {
+                    @Override
+                    public final Object getProperty(final String name) {
+                        return properties.get(name);
+                    }
+                };
+            }
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public CompletionStage<JAXRS.Instance> bootstrap(final Application application, final JAXRS.Configuration configuration) {
+        return CompletableFuture.supplyAsync(() -> {
+            final String protocol = (String) configuration.getProperty(JAXRS.Configuration.PROTOCOL);
+            final String host = (String) configuration.getProperty(JAXRS.Configuration.HOST);
+            final int port = (int) configuration.getProperty(JAXRS.Configuration.PORT);
+            final String rootPath = (String) configuration.getProperty(JAXRS.Configuration.ROOT_PATH);
+            final BiFunction<URI, ResourceConfig, ?> httpServerProvider = (BiFunction<URI, ResourceConfig, ?>) configuration
+                    .getProperty(ServerProperties.HTTP_SERVER_PROVIDER);
+            final Consumer<Object> httpServerAnnihilator = (Consumer<Object>) configuration
+                    .getProperty(ServerProperties.HTTP_SERVER_ANNIHILATOR);
+
+            final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
+            final ResourceConfig rc = ResourceConfig.forApplication(application);
+            final Object httpServer = httpServerProvider.apply(uri, rc);
+
+            return new JAXRS.Instance() {
+                @Override
+                public final CompletionStage<Void> stop() {
+                    return CompletableFuture.runAsync(() -> httpServerAnnihilator.accept(httpServer));
+                }
+            };
+        });
+    }
+
 }
