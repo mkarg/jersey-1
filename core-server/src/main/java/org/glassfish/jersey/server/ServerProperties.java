@@ -40,8 +40,9 @@ public final class ServerProperties {
 
     /**
      * Defines the implementation of {@link Server} to bootstrap.
-     *
+     * <p>
      * By default auto-selects the first server provider found.
+     * </p>
      */
     public static final String HTTP_SERVER_CLASS = "jersey.config.server.httpServerClass";
 

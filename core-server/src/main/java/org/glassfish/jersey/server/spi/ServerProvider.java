@@ -18,12 +18,14 @@ package org.glassfish.jersey.server.spi;
 
 import java.net.URI;
 
+import javax.net.ssl.SSLContext;
 import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.RuntimeType;
 
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.spi.Contract;
 
 /**
@@ -73,12 +75,16 @@ public interface ServerProvider {
      *            uri the root address on which to bind the application.
      * @param resourceConfig
      *            The resource configuration defining the application.
+     * @param sslContext
+     *            The secure socket configuration to be used with HTTPS.
+     * @param sslClientAuth
+     *            Whether the server needs SSL client authentication.
      * @return the server, otherwise {@code null} if the provider does not support
      *         the requested {@code type}.
      *
      * @throws ProcessingException
      *             if there is an error creating the server.
      */
-    public <T extends Server> T createServer(Class<T> type, URI uri, ResourceConfig resourceConfig)
-            throws ProcessingException;
+    public <T extends Server> T createServer(Class<T> type, URI uri, ResourceConfig resourceConfig,
+            SSLContext sslContext, SslClientAuth sslClientAuth) throws ProcessingException;
 }

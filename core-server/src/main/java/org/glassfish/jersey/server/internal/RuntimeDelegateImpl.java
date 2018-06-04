@@ -17,11 +17,13 @@
 package org.glassfish.jersey.server.internal;
 
 import java.net.URI;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import javax.net.ssl.SSLContext;
 import javax.ws.rs.JAXRS;
 import javax.ws.rs.JAXRS.Configuration;
 import javax.ws.rs.core.Application;
@@ -33,6 +35,7 @@ import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerFactory;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
 /**
@@ -70,8 +73,16 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
             {
                 this.properties.put(JAXRS.Configuration.PROTOCOL, "HTTP");
                 this.properties.put(JAXRS.Configuration.HOST, "localhost");
+                this.properties.put(JAXRS.Configuration.PORT, -1); // Auto-select port 80 for HTTP or 443 for HTTPS
                 this.properties.put(JAXRS.Configuration.ROOT_PATH, "/");
                 this.properties.put(ServerProperties.HTTP_SERVER_CLASS, Server.class); // Auto-select first provider
+                try {
+                    this.properties.put(JAXRS.Configuration.SSL_CONTEXT, SSLContext.getDefault());
+                } catch (final NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+                this.properties.put(JAXRS.Configuration.SSL_CLIENT_AUTHENTICATION,
+                        JAXRS.Configuration.SSLClientAuthentication.NONE);
             }
 
             @Override
@@ -82,9 +93,6 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
 
             @Override
             public final JAXRS.Configuration build() {
-                properties.putIfAbsent(JAXRS.Configuration.PORT,
-                        "HTTPS".equals(properties.get(JAXRS.Configuration.PROTOCOL)) ? 443 : 80);
-
                 return new JAXRS.Configuration() {
                     @Override
                     public final Object property(final String name) {
@@ -104,11 +112,16 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
             final String host = configuration.host();
             final int port = configuration.port();
             final String rootPath = configuration.rootPath();
-            final Class<Server> httpServerClass = (Class<Server>) configuration.property(ServerProperties.HTTP_SERVER_CLASS);
+            final SSLContext sslContext = configuration.sslContext();
+            final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
+                    .sslClientAuthentication();
+            final Class<Server> httpServerClass = (Class<Server>) configuration
+                    .property(ServerProperties.HTTP_SERVER_CLASS);
 
             final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
             final ResourceConfig rc = ResourceConfig.forApplication(application);
-            final Server server = ServerFactory.createServer(httpServerClass, uri, rc);
+            final Server server = ServerFactory.createServer(httpServerClass, uri, rc, sslContext,
+                    sslClientAuth(sslClientAuthentication));
 
             return new JAXRS.Instance() {
                 @Override
@@ -133,6 +146,18 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
                 }
             };
         });
+    }
+
+    private static SslClientAuth sslClientAuth(
+            final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication) {
+        switch (sslClientAuthentication) {
+        case MANDATORY:
+            return SslClientAuth.NEEDS;
+        case OPTIONAL:
+            return SslClientAuth.WANTS;
+        default:
+            return SslClientAuth.NONE;
+        }
     }
 
 }

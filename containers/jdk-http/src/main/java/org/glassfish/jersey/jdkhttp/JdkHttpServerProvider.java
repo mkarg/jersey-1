@@ -18,7 +18,10 @@ package org.glassfish.jersey.jdkhttp;
 
 import java.net.URI;
 
+import javax.net.ssl.SSLContext;
+
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 import org.glassfish.jersey.server.spi.ServerProvider;
 
@@ -30,8 +33,10 @@ import org.glassfish.jersey.server.spi.ServerProvider;
 public class JdkHttpServerProvider implements ServerProvider {
 
     @Override
-    public <T extends Server> T createServer(final Class<T> type, final URI uri, final ResourceConfig resourceConfig) {
-        return JdkHttpServer.class == type || Server.class == type ? type.cast(new JdkHttpServer(uri, resourceConfig))
+    public <T extends Server> T createServer(final Class<T> type, final URI uri, final ResourceConfig resourceConfig,
+            final SSLContext sslContext, final SslClientAuth sslClientAuth) {
+        return JdkHttpServer.class == type || Server.class == type
+                ? type.cast(new JdkHttpServer(uri, resourceConfig, sslContext, sslClientAuth))
                 : null;
     }
 }

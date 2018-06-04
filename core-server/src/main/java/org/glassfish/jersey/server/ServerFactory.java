@@ -19,6 +19,8 @@ package org.glassfish.jersey.server;
 import java.net.URI;
 import java.rmi.ServerException;
 
+import javax.net.ssl.SSLContext;
+
 import org.glassfish.jersey.internal.ServiceFinder;
 import org.glassfish.jersey.server.spi.Server;
 import org.glassfish.jersey.server.spi.ServerProvider;
@@ -52,18 +54,21 @@ public final class ServerFactory {
      *            uri the root address on which to bind the application.
      * @param resourceConfig
      *            The resource configuration defining the application.
+     * @param sslContext
+     *            The secure socket configuration to be used with HTTPS.
+     * @param sslClientAuth
+     *            Whether the server needs SSL client authentication.
      * @return the server, otherwise {@code null} if the provider does not support
      *         the requested {@code type}.
-     *
      * @throws ServerException
      *             if there was an error creating the container.
      * @throws IllegalArgumentException
      *             if no server provider supports the type.
      */
     public static <T extends Server> T createServer(final Class<T> type, final URI uri,
-            final ResourceConfig resourceConfig) {
+            final ResourceConfig resourceConfig, final SSLContext sslContext, final SslClientAuth sslClientAuth) {
         for (final ServerProvider serverProvider : ServiceFinder.find(ServerProvider.class)) {
-            final T server = serverProvider.createServer(type, uri, resourceConfig);
+            final T server = serverProvider.createServer(type, uri, resourceConfig, sslContext, sslClientAuth);
             if (server != null) {
                 return server;
             }
@@ -72,4 +77,24 @@ public final class ServerFactory {
         throw new IllegalArgumentException("No server provider supports the type " + type);
     }
 
+    public static enum SslClientAuth {
+        NONE(false, false), WANTS(true, false), NEEDS(false, true);
+
+        private final boolean wants;
+
+        private final boolean needs;
+
+        private SslClientAuth(final boolean wants, final boolean needs) {
+            this.wants = wants;
+            this.needs = needs;
+        }
+
+        public boolean wanted() {
+            return this.wants;
+        }
+
+        public boolean needed() {
+            return this.needs;
+        }
+    }
 }

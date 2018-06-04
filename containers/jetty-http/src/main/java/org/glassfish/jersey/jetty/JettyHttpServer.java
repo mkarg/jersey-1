@@ -5,15 +5,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
+import javax.net.ssl.SSLContext;
+
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
 public final class JettyHttpServer implements Server {
 
     private final org.eclipse.jetty.server.Server httpServer;
 
-    JettyHttpServer(final URI uri, final ResourceConfig resourceConfig) {
-        this.httpServer = JettyHttpContainerFactory.createServer(uri, resourceConfig);
+    JettyHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
+            final SslClientAuth sslClientAuth) {
+        final SslContextFactory sslContextFactory;
+        if ("https".equals(uri.getScheme())) {
+            sslContextFactory = new SslContextFactory();
+            sslContextFactory.setSslContext(sslContext);
+            sslContextFactory.setWantClientAuth(sslClientAuth.wanted());
+            sslContextFactory.setNeedClientAuth(sslClientAuth.needed());
+        } else {
+            sslContextFactory = null;
+        }
+        this.httpServer = JettyHttpContainerFactory.createServer(uri, sslContextFactory, resourceConfig);
     }
 
     @Override
