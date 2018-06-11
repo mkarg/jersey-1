@@ -8,15 +8,17 @@ import java.util.concurrent.CompletionStage;
 import javax.net.ssl.SSLContext;
 
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
 public final class SimpleHttpServer implements Server {
 
     private final SimpleServer simpleServer;
 
-    SimpleHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext) {
+    SimpleHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
+            final SslClientAuth sslClientAuth) {
         this.simpleServer = SimpleContainerFactory.create(uri, "https".equals(uri.getScheme()) ? sslContext : null,
-                resourceConfig);
+                sslClientAuth, resourceConfig);
     }
 
     @Override

@@ -35,11 +35,8 @@ public class SimpleHttpServerProvider implements ServerProvider {
     @Override
     public <T extends Server> T createServer(final Class<T> type, final URI uri, final ResourceConfig resourceConfig,
             final SSLContext sslContext, final SslClientAuth sslClientAuth) {
-        if (sslClientAuth != SslClientAuth.NONE && sslClientAuth != null) {
-            throw new UnsupportedOperationException("SSL client authentication not supported");
-        }
         return SimpleHttpServer.class == type || Server.class == type
-                ? type.cast(new SimpleHttpServer(uri, resourceConfig, sslContext))
+                ? type.cast(new SimpleHttpServer(uri, resourceConfig, sslContext, sslClientAuth))
                 : null;
     }
 }
