@@ -152,9 +152,9 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
             final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication) {
         switch (sslClientAuthentication) {
         case MANDATORY:
-            return SslClientAuth.NEEDS;
+            return SslClientAuth.NEEDED;
         case OPTIONAL:
-            return SslClientAuth.WANTS;
+            return SslClientAuth.WANTED;
         default:
             return SslClientAuth.NONE;
         }

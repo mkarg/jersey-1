@@ -57,7 +57,7 @@ public final class ServerFactory {
      * @param sslContext
      *            The secure socket configuration to be used with HTTPS.
      * @param sslClientAuth
-     *            Whether the server needs SSL client authentication.
+     *            Whether the server wants or needs SSL client authentication.
      * @return the server, otherwise {@code null} if the provider does not support
      *         the requested {@code type}.
      * @throws ServerException
@@ -78,23 +78,23 @@ public final class ServerFactory {
     }
 
     public static enum SslClientAuth {
-        NONE(false, false), WANTS(true, false), NEEDS(false, true);
+        NONE(false, false), WANTED(true, false), NEEDED(false, true);
 
-        private final boolean wants;
+        private final boolean wanted;
 
-        private final boolean needs;
+        private final boolean needed;
 
-        private SslClientAuth(final boolean wants, final boolean needs) {
-            this.wants = wants;
-            this.needs = needs;
+        private SslClientAuth(final boolean wanted, final boolean needed) {
+            this.wanted = wanted;
+            this.needed = needed;
         }
 
         public boolean wanted() {
-            return this.wants;
+            return this.wanted;
         }
 
         public boolean needed() {
-            return this.needs;
+            return this.needed;
         }
     }
 }

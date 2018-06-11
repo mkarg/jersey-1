@@ -179,11 +179,11 @@ public final class SimpleContainerFactory {
                     public final void process(final Socket socket) throws IOException {
                         final SSLEngine sslEngine = socket.getEngine();
                         switch (sslClientAuth) {
-                        case NEEDS: {
+                        case NEEDED: {
                             sslEngine.setNeedClientAuth(true);
                             break;
                         }
-                        case WANTS: {
+                        case WANTED: {
                             sslEngine.setWantClientAuth(true);
                             break;
                         }

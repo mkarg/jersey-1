@@ -29,9 +29,9 @@ public final class NettyHttpServer implements Server {
 
     private static ClientAuth nettyClientAuth(final SslClientAuth sslClientAuth) {
         switch (sslClientAuth) {
-        case NEEDS:
+        case NEEDED:
             return ClientAuth.REQUIRE;
-        case WANTS:
+        case WANTED:
             return ClientAuth.OPTIONAL;
         default:
             return ClientAuth.NONE;
