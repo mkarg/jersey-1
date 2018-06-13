@@ -23,6 +23,11 @@ public final class JdkHttpServer implements Server {
     }
 
     @Override
+    public final int port() {
+        return this.httpServer.getAddress().getPort();
+    }
+
+    @Override
     public final CompletionStage<?> stop() {
         return CompletableFuture.runAsync(() -> this.httpServer.stop(0));
     }

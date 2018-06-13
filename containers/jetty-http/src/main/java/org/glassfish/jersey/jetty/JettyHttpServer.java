@@ -7,6 +7,7 @@ import java.util.concurrent.CompletionStage;
 
 import javax.net.ssl.SSLContext;
 
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
@@ -28,6 +29,11 @@ public final class JettyHttpServer implements Server {
             sslContextFactory = null;
         }
         this.httpServer = JettyHttpContainerFactory.createServer(uri, sslContextFactory, resourceConfig);
+    }
+
+    @Override
+    public final int port() {
+        return ((ServerConnector) this.httpServer.getConnectors()[0]).getPort();
     }
 
     @Override

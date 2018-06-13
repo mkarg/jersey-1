@@ -126,7 +126,12 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
             return new JAXRS.Instance() {
                 @Override
                 public final Configuration configuration() {
-                    return configuration;
+                    return new JAXRS.Configuration() {
+                        @Override
+                        public final Object property(final String name) {
+                            return JAXRS.Configuration.PORT.equals(name) ? server.port() : configuration.property(name);
+                        }
+                    };
                 }
 
                 @Override

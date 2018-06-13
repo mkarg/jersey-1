@@ -1,5 +1,6 @@
 package org.glassfish.jersey.netty.httpserver;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -36,6 +37,11 @@ public final class NettyHttpServer implements Server {
         default:
             return ClientAuth.NONE;
         }
+    }
+
+    @Override
+    public final int port() {
+        return ((InetSocketAddress) this.channel.localAddress()).getPort();
     }
 
     @Override

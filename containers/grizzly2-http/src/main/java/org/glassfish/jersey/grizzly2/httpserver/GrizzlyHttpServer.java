@@ -26,6 +26,11 @@ public final class GrizzlyHttpServer implements Server {
     }
 
     @Override
+    public final int port() {
+        return this.httpServer.getListener("grizzly").getPort();
+    }
+
+    @Override
     public final CompletionStage<?> stop() {
         return CompletableFuture.runAsync(this.httpServer::shutdownNow);
     }

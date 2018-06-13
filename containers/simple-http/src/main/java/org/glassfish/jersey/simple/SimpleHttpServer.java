@@ -22,6 +22,11 @@ public final class SimpleHttpServer implements Server {
     }
 
     @Override
+    public final int port() {
+        return this.simpleServer.getPort();
+    }
+
+    @Override
     public final CompletionStage<?> stop() {
         return CompletableFuture.runAsync(() -> {
             try {
