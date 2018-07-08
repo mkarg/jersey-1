@@ -18,11 +18,14 @@ import io.netty.handler.ssl.JdkSslContext;
 
 public final class NettyHttpServer implements Server {
 
+    private final NettyHttpContainer container;
+
     private final Channel channel;
 
     NettyHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
             final SslClientAuth sslClientAuth) {
-        this.channel = NettyHttpContainerProvider.createServer(uri, resourceConfig,
+        this.container = new NettyHttpContainer(resourceConfig);
+        this.channel = NettyHttpContainerProvider.createServer(uri, this.container,
                 "https".equals(uri.getScheme()) ? new JdkSslContext(sslContext, false, nettyClientAuth(sslClientAuth))
                         : null,
                 false);
@@ -37,6 +40,11 @@ public final class NettyHttpServer implements Server {
         default:
             return ClientAuth.NONE;
         }
+    }
+
+    @Override
+    public final NettyHttpContainer container() {
+        return this.container;
     }
 
     @Override

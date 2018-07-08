@@ -14,12 +14,19 @@ import com.sun.net.httpserver.HttpServer;
 
 public final class JdkHttpServer implements Server {
 
+    private final JdkHttpHandlerContainer container;
+
     private final HttpServer httpServer;
 
     JdkHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
             final SslClientAuth sslClientAuth) {
-        this.httpServer = JdkHttpServerFactory.createHttpServer(uri, new JdkHttpHandlerContainer(resourceConfig),
-                sslContext, sslClientAuth, true);
+        this.container = new JdkHttpHandlerContainer(resourceConfig);
+        this.httpServer = JdkHttpServerFactory.createHttpServer(uri, this.container, sslContext, sslClientAuth, true);
+    }
+
+    @Override
+    public final JdkHttpHandlerContainer container() {
+        return this.container;
     }
 
     @Override

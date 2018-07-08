@@ -15,14 +15,23 @@ import org.glassfish.jersey.server.spi.Server;
 
 public final class GrizzlyHttpServer implements Server {
 
+    private final GrizzlyHttpContainer container;
+
     private final HttpServer httpServer;
 
     GrizzlyHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
             final boolean wantsClientAuthentication, final boolean needsClientAuthentication)
             throws NoSuchAlgorithmException, KeyManagementException {
-        this.httpServer = GrizzlyHttpServerFactory.createHttpServer(uri, resourceConfig,
+        this.container = new GrizzlyHttpContainer(resourceConfig);
+        this.httpServer = GrizzlyHttpServerFactory.createHttpServer(uri, this.container,
                 "https".equals(uri.getScheme()),
-                new SSLEngineConfigurator(sslContext, false, needsClientAuthentication, wantsClientAuthentication));
+                new SSLEngineConfigurator(sslContext, false, needsClientAuthentication, wantsClientAuthentication),
+                true);
+    }
+
+    @Override
+    public final GrizzlyHttpContainer container() {
+        return this.container;
     }
 
     @Override

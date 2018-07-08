@@ -4,6 +4,8 @@ import java.util.concurrent.CompletionStage;
 
 public interface Server {
 
+    public Container container();
+
     public int port();
 
     public CompletionStage<?> stop();

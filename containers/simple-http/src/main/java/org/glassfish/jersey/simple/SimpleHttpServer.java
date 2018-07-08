@@ -13,12 +13,20 @@ import org.glassfish.jersey.server.spi.Server;
 
 public final class SimpleHttpServer implements Server {
 
+    private final SimpleContainer container;
+
     private final SimpleServer simpleServer;
 
     SimpleHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
             final SslClientAuth sslClientAuth) {
+        this.container = new SimpleContainer(resourceConfig);
         this.simpleServer = SimpleContainerFactory.create(uri, "https".equals(uri.getScheme()) ? sslContext : null,
-                sslClientAuth, resourceConfig);
+                sslClientAuth, this.container);
+    }
+
+    @Override
+    public final SimpleContainer container() {
+        return this.container;
     }
 
     @Override

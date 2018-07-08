@@ -58,7 +58,7 @@ public class NettyHttpContainerProvider implements ContainerProvider {
      * Create and start Netty server.
      *
      * @param baseUri       base uri.
-     * @param configuration Jersey configuration.
+     * @param container     Jersey container.
      * @param sslContext    Netty SSL context (can be null).
      * @param block         when {@code true}, this method will block until the server is stopped. When {@code false}, the
      *                      execution will
@@ -66,14 +66,13 @@ public class NettyHttpContainerProvider implements ContainerProvider {
      * @return Netty channel instance.
      * @throws ProcessingException when there is an issue with creating new container.
      */
-    public static Channel createServer(final URI baseUri, final ResourceConfig configuration, SslContext sslContext,
+    public static Channel createServer(final URI baseUri, final NettyHttpContainer container, SslContext sslContext,
                                        final boolean block)
             throws ProcessingException {
 
         // Configure the server.
         final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         final EventLoopGroup workerGroup = new NioEventLoopGroup();
-        final NettyHttpContainer container = new NettyHttpContainer(configuration);
 
         try {
             ServerBootstrap b = new ServerBootstrap();
@@ -105,6 +104,24 @@ public class NettyHttpContainerProvider implements ContainerProvider {
         } catch (InterruptedException e) {
             throw new ProcessingException(e);
         }
+    }
+
+    /**
+     * Create and start Netty server.
+     *
+     * @param baseUri       base uri.
+     * @param configuration Jersey configuration.
+     * @param sslContext    Netty SSL context (can be null).
+     * @param block         when {@code true}, this method will block until the server is stopped. When {@code false}, the
+     *                      execution will
+     *                      end immediately after the server is started.
+     * @return Netty channel instance.
+     * @throws ProcessingException when there is an issue with creating new container.
+     */
+    public static Channel createServer(final URI baseUri, final ResourceConfig configuration, SslContext sslContext,
+                                       final boolean block)
+            throws ProcessingException {
+        return createServer(baseUri, new NettyHttpContainer(configuration), sslContext, block);
     }
 
     /**

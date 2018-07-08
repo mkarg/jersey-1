@@ -9,11 +9,14 @@ import javax.net.ssl.SSLContext;
 
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
 public final class JettyHttpServer implements Server {
+
+    private final JettyHttpContainer container;
 
     private final org.eclipse.jetty.server.Server httpServer;
 
@@ -28,7 +31,13 @@ public final class JettyHttpServer implements Server {
         } else {
             sslContextFactory = null;
         }
-        this.httpServer = JettyHttpContainerFactory.createServer(uri, sslContextFactory, resourceConfig);
+        this.container = ContainerFactory.createContainer(JettyHttpContainer.class, resourceConfig);
+        this.httpServer = JettyHttpContainerFactory.createServer(uri, sslContextFactory, this.container, true);
+    }
+
+    @Override
+    public final JettyHttpContainer container() {
+        return this.container;
     }
 
     @Override

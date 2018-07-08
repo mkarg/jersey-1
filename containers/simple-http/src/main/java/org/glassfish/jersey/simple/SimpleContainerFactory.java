@@ -169,8 +169,7 @@ public final class SimpleContainerFactory {
      * @throws IllegalArgumentException if {@code address} is {@code null}.
      */
     public static SimpleServer create(final URI address, final SSLContext context, final SslClientAuth sslClientAuth,
-            final ResourceConfig resourceConfig) {
-        final SimpleContainer container = new SimpleContainer(resourceConfig);
+            final SimpleContainer container) {
         return _create(address, context, container, new UnsafeValue<SocketProcessor, IOException>() {
             @Override
             public SocketProcessor get() throws IOException {
