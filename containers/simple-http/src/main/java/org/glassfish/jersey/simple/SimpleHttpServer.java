@@ -6,8 +6,8 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.core.Application;
 
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
@@ -17,9 +17,9 @@ public final class SimpleHttpServer implements Server {
 
     private final SimpleServer simpleServer;
 
-    SimpleHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
+    SimpleHttpServer(final URI uri, final Application application, final SSLContext sslContext,
             final SslClientAuth sslClientAuth) {
-        this.container = new SimpleContainer(resourceConfig);
+        this.container = new SimpleContainer(application);
         this.simpleServer = SimpleContainerFactory.create(uri, "https".equals(uri.getScheme()) ? sslContext : null,
                 sslClientAuth, this.container);
     }

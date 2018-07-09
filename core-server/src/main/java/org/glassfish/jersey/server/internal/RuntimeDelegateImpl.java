@@ -32,7 +32,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.internal.AbstractRuntimeDelegate;
 import org.glassfish.jersey.message.internal.MessagingBinders;
 import org.glassfish.jersey.server.ContainerFactory;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerFactory;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
@@ -119,8 +118,7 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
                     .property(ServerProperties.HTTP_SERVER_CLASS);
 
             final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
-            final ResourceConfig rc = ResourceConfig.forApplication(application);
-            final Server server = ServerFactory.createServer(httpServerClass, uri, rc, sslContext,
+            final Server server = ServerFactory.createServer(httpServerClass, uri, application, sslContext,
                     sslClientAuth(sslClientAuthentication));
 
             return new JAXRS.Instance() {

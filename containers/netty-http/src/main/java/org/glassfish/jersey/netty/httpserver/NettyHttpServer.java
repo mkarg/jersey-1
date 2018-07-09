@@ -7,8 +7,8 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.core.Application;
 
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
@@ -22,9 +22,9 @@ public final class NettyHttpServer implements Server {
 
     private final Channel channel;
 
-    NettyHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
+    NettyHttpServer(final URI uri, final Application application, final SSLContext sslContext,
             final SslClientAuth sslClientAuth) {
-        this.container = new NettyHttpContainer(resourceConfig);
+        this.container = new NettyHttpContainer(application);
         this.channel = NettyHttpContainerProvider.createServer(uri, this.container,
                 "https".equals(uri.getScheme()) ? new JdkSslContext(sslContext, false, nettyClientAuth(sslClientAuth))
                         : null,

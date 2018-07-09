@@ -20,6 +20,7 @@ import java.net.URI;
 import java.rmi.ServerException;
 
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.internal.ServiceFinder;
 import org.glassfish.jersey.server.spi.Server;
@@ -52,8 +53,8 @@ public final class ServerFactory {
      *            the type of the server.
      * @param URI
      *            uri the root address on which to bind the application.
-     * @param resourceConfig
-     *            The resource configuration defining the application.
+     * @param application
+     *            The application to boot.
      * @param sslContext
      *            The secure socket configuration to be used with HTTPS.
      * @param sslClientAuth
@@ -65,10 +66,10 @@ public final class ServerFactory {
      * @throws IllegalArgumentException
      *             if no server provider supports the type.
      */
-    public static <T extends Server> T createServer(final Class<T> type, final URI uri,
-            final ResourceConfig resourceConfig, final SSLContext sslContext, final SslClientAuth sslClientAuth) {
+    public static <T extends Server> T createServer(final Class<T> type, final URI uri, final Application application,
+            final SSLContext sslContext, final SslClientAuth sslClientAuth) {
         for (final ServerProvider serverProvider : ServiceFinder.find(ServerProvider.class)) {
-            final T server = serverProvider.createServer(type, uri, resourceConfig, sslContext, sslClientAuth);
+            final T server = serverProvider.createServer(type, uri, application, sslContext, sslClientAuth);
             if (server != null) {
                 return server;
             }

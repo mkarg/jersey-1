@@ -5,8 +5,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.core.Application;
 
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
@@ -18,9 +18,9 @@ public final class JdkHttpServer implements Server {
 
     private final HttpServer httpServer;
 
-    JdkHttpServer(final URI uri, final ResourceConfig resourceConfig, final SSLContext sslContext,
+    JdkHttpServer(final URI uri, final Application application, final SSLContext sslContext,
             final SslClientAuth sslClientAuth) {
-        this.container = new JdkHttpHandlerContainer(resourceConfig);
+        this.container = new JdkHttpHandlerContainer(application);
         this.httpServer = JdkHttpServerFactory.createHttpServer(uri, this.container, sslContext, sslClientAuth, true);
     }
 

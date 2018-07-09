@@ -22,9 +22,9 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.RuntimeType;
+import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.server.ApplicationHandler;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.spi.Contract;
 
@@ -73,8 +73,8 @@ public interface ServerProvider {
      *            the type of the server.
      * @param URI
      *            uri the root address on which to bind the application.
-     * @param resourceConfig
-     *            The resource configuration defining the application.
+     * @param application
+     *            The JAX-RS application to boot.
      * @param sslContext
      *            The secure socket configuration to be used with HTTPS.
      * @param sslClientAuth
@@ -85,6 +85,6 @@ public interface ServerProvider {
      * @throws ProcessingException
      *             if there is an error creating the server.
      */
-    public <T extends Server> T createServer(Class<T> type, URI uri, ResourceConfig resourceConfig,
-            SSLContext sslContext, SslClientAuth sslClientAuth) throws ProcessingException;
+    public <T extends Server> T createServer(Class<T> type, URI uri, Application application, SSLContext sslContext,
+            SslClientAuth sslClientAuth) throws ProcessingException;
 }
