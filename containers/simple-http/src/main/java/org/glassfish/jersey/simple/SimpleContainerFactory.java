@@ -24,11 +24,11 @@ import java.net.URI;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.ws.rs.JAXRS.Configuration.SSLClientAuthentication;
 import javax.ws.rs.ProcessingException;
 
 import org.glassfish.jersey.internal.util.collection.UnsafeValue;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.simple.internal.LocalizationMessages;
 import org.simpleframework.http.core.Container;
 import org.simpleframework.http.core.ContainerSocketProcessor;
@@ -163,13 +163,13 @@ public final class SimpleContainerFactory {
      *                  The URI path, query and fragment components are ignored.
      * @param context   this is the SSL context used for SSL connections.
      * @param config    the resource configuration.
-     * @param sslClientAuth Secure socket client authentication policy.
+     * @param sslClientAuthentication Secure socket client authentication policy.
      * @return the closeable connection, with the endpoint started.
      * @throws ProcessingException      thrown when problems during server creation.
      * @throws IllegalArgumentException if {@code address} is {@code null}.
      */
-    public static SimpleServer create(final URI address, final SSLContext context, final SslClientAuth sslClientAuth,
-            final SimpleContainer container) {
+    public static SimpleServer create(final URI address, final SSLContext context,
+            final SSLClientAuthentication sslClientAuthentication, final SimpleContainer container) {
         return _create(address, context, container, new UnsafeValue<SocketProcessor, IOException>() {
             @Override
             public SocketProcessor get() throws IOException {
@@ -177,12 +177,12 @@ public final class SimpleContainerFactory {
                     @Override
                     public final void process(final Socket socket) throws IOException {
                         final SSLEngine sslEngine = socket.getEngine();
-                        switch (sslClientAuth) {
-                        case NEEDED: {
+                        switch (sslClientAuthentication) {
+                        case MANDATORY: {
                             sslEngine.setNeedClientAuth(true);
                             break;
                         }
-                        case WANTED: {
+                        case OPTIONAL: {
                             sslEngine.setWantClientAuth(true);
                             break;
                         }

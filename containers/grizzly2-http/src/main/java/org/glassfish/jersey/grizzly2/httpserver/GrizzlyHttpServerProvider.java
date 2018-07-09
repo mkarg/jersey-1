@@ -16,14 +16,12 @@
 
 package org.glassfish.jersey.grizzly2.httpserver;
 
-import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.net.ssl.SSLContext;
+import javax.ws.rs.JAXRS;
 import javax.ws.rs.core.Application;
 
-import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 import org.glassfish.jersey.server.spi.ServerProvider;
 
@@ -35,11 +33,11 @@ import org.glassfish.jersey.server.spi.ServerProvider;
 public class GrizzlyHttpServerProvider implements ServerProvider {
 
     @Override
-    public <T extends Server> T createServer(final Class<T> type, final URI uri, final Application application,
-            final SSLContext sslContext, final SslClientAuth sslClientAuth) {
+    public <T extends Server> T createServer(final Class<T> type, final Application application,
+            final JAXRS.Configuration configuration) {
         try {
-            return GrizzlyHttpServer.class == type || Server.class == type ? type.cast(
-                    new GrizzlyHttpServer(uri, application, sslContext, sslClientAuth.wanted(), sslClientAuth.needed()))
+            return GrizzlyHttpServer.class == type || Server.class == type
+                    ? type.cast(new GrizzlyHttpServer(application, configuration))
                     : null;
         } catch (final NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();

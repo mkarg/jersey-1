@@ -32,7 +32,6 @@ import org.glassfish.jersey.internal.guava.ThreadFactoryBuilder;
 import org.glassfish.jersey.jdkhttp.internal.LocalizationMessages;
 import org.glassfish.jersey.process.JerseyProcessingUncaughtExceptionHandler;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Container;
 
 import com.sun.net.httpserver.HttpContext;
@@ -183,13 +182,14 @@ public final class JdkHttpServerFactory {
             final JdkHttpHandlerContainer handler,
             final SSLContext sslContext,
             final boolean start) {
-        return createHttpServer(uri, handler, sslContext, SslClientAuth.NONE, start);
+        return createHttpServer(uri, handler, sslContext, false, false, start);
     }
 
     static HttpServer createHttpServer(final URI uri,
                                                final JdkHttpHandlerContainer handler,
                                                final SSLContext sslContext,
-                                               final SslClientAuth sslClientAuth,
+                                               final boolean sslClientAuthWanted,
+                                               final boolean sslClientAuthNeeded,
                                                final boolean start) {
         if (uri == null) {
             throw new IllegalArgumentException(LocalizationMessages.ERROR_CONTAINER_URI_NULL());
@@ -201,8 +201,8 @@ public final class JdkHttpServerFactory {
         final HttpsConfigurator httpsConfigurator = sslContext != null ? new HttpsConfigurator(sslContext) {
             public final void configure(final HttpsParameters httpsParameters) {
                 final SSLParameters sslParameters = sslContext.getDefaultSSLParameters();
-                sslParameters.setWantClientAuth(sslClientAuth.wanted());
-                sslParameters.setNeedClientAuth(sslClientAuth.needed());
+                sslParameters.setWantClientAuth(sslClientAuthWanted);
+                sslParameters.setNeedClientAuth(sslClientAuthNeeded);
                 httpsParameters.setSSLParameters(sslParameters);
             }
         } : null;

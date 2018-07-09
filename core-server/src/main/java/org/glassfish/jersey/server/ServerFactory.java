@@ -16,10 +16,9 @@
 
 package org.glassfish.jersey.server;
 
-import java.net.URI;
 import java.rmi.ServerException;
 
-import javax.net.ssl.SSLContext;
+import javax.ws.rs.JAXRS;
 import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.internal.ServiceFinder;
@@ -29,7 +28,7 @@ import org.glassfish.jersey.server.spi.ServerProvider;
 /**
  * Factory for creating specific HTTP servers.
  *
- * @author Markus KARG (markus@hedcrashing.eu)
+ * @author Markus KARG (markus@headcrashing.eu)
  */
 public final class ServerFactory {
 
@@ -51,14 +50,10 @@ public final class ServerFactory {
      *            the type of the server.
      * @param type
      *            the type of the server.
-     * @param URI
-     *            uri the root address on which to bind the application.
      * @param application
      *            The application to boot.
-     * @param sslContext
-     *            The secure socket configuration to be used with HTTPS.
-     * @param sslClientAuth
-     *            Whether the server wants or needs SSL client authentication.
+     * @param configuration
+     *            The configuration (host, port, etc.) to be used for bootstrapping.
      * @return the server, otherwise {@code null} if the provider does not support
      *         the requested {@code type}.
      * @throws ServerException
@@ -66,10 +61,10 @@ public final class ServerFactory {
      * @throws IllegalArgumentException
      *             if no server provider supports the type.
      */
-    public static <T extends Server> T createServer(final Class<T> type, final URI uri, final Application application,
-            final SSLContext sslContext, final SslClientAuth sslClientAuth) {
+    public static <T extends Server> T createServer(final Class<T> type, final Application application,
+            final JAXRS.Configuration configuration) {
         for (final ServerProvider serverProvider : ServiceFinder.find(ServerProvider.class)) {
-            final T server = serverProvider.createServer(type, uri, application, sslContext, sslClientAuth);
+            final T server = serverProvider.createServer(type, application, configuration);
             if (server != null) {
                 return server;
             }
@@ -78,24 +73,4 @@ public final class ServerFactory {
         throw new IllegalArgumentException("No server provider supports the type " + type);
     }
 
-    public static enum SslClientAuth {
-        NONE(false, false), WANTED(true, false), NEEDED(false, true);
-
-        private final boolean wanted;
-
-        private final boolean needed;
-
-        private SslClientAuth(final boolean wanted, final boolean needed) {
-            this.wanted = wanted;
-            this.needed = needed;
-        }
-
-        public boolean wanted() {
-            return this.wanted;
-        }
-
-        public boolean needed() {
-            return this.needed;
-        }
-    }
 }

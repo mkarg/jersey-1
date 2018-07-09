@@ -16,7 +16,6 @@
 
 package org.glassfish.jersey.server.internal;
 
-import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,14 +26,12 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.JAXRS;
 import javax.ws.rs.JAXRS.Configuration;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.internal.AbstractRuntimeDelegate;
 import org.glassfish.jersey.message.internal.MessagingBinders;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ServerFactory;
 import org.glassfish.jersey.server.ServerProperties;
-import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
 /**
@@ -107,19 +104,10 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
     public CompletionStage<JAXRS.Instance> bootstrap(final Application application,
             final JAXRS.Configuration configuration) {
         return CompletableFuture.supplyAsync(() -> {
-            final String protocol = configuration.protocol();
-            final String host = configuration.host();
-            final int port = configuration.port();
-            final String rootPath = configuration.rootPath();
-            final SSLContext sslContext = configuration.sslContext();
-            final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
-                    .sslClientAuthentication();
             final Class<Server> httpServerClass = (Class<Server>) configuration
                     .property(ServerProperties.HTTP_SERVER_CLASS);
 
-            final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
-            final Server server = ServerFactory.createServer(httpServerClass, uri, application, sslContext,
-                    sslClientAuth(sslClientAuthentication));
+            final Server server = ServerFactory.createServer(httpServerClass, application, configuration);
 
             return new JAXRS.Instance() {
                 @Override
@@ -149,18 +137,6 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
                 }
             };
         });
-    }
-
-    private static SslClientAuth sslClientAuth(
-            final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication) {
-        switch (sslClientAuthentication) {
-        case MANDATORY:
-            return SslClientAuth.NEEDED;
-        case OPTIONAL:
-            return SslClientAuth.WANTED;
-        default:
-            return SslClientAuth.NONE;
-        }
     }
 
 }

@@ -7,9 +7,10 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.JAXRS;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.UriBuilder;
 
-import org.glassfish.jersey.server.ServerFactory.SslClientAuth;
 import org.glassfish.jersey.server.spi.Server;
 
 import io.netty.channel.Channel;
@@ -22,20 +23,30 @@ public final class NettyHttpServer implements Server {
 
     private final Channel channel;
 
-    NettyHttpServer(final URI uri, final Application application, final SSLContext sslContext,
-            final SslClientAuth sslClientAuth) {
+    NettyHttpServer(final Application application, final JAXRS.Configuration configuration) {
+        final String protocol = configuration.protocol();
+        final String host = configuration.host();
+        final int port = configuration.port();
+        final String rootPath = configuration.rootPath();
+        final SSLContext sslContext = configuration.sslContext();
+        final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
+                .sslClientAuthentication();
+        final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
+
         this.container = new NettyHttpContainer(application);
         this.channel = NettyHttpContainerProvider.createServer(uri, this.container,
-                "https".equals(uri.getScheme()) ? new JdkSslContext(sslContext, false, nettyClientAuth(sslClientAuth))
+                "HTTPS".equals(protocol)
+                        ? new JdkSslContext(sslContext, false, nettyClientAuth(sslClientAuthentication))
                         : null,
                 false);
     }
 
-    private static ClientAuth nettyClientAuth(final SslClientAuth sslClientAuth) {
-        switch (sslClientAuth) {
-        case NEEDED:
+    private static ClientAuth nettyClientAuth(
+            final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication) {
+        switch (sslClientAuthentication) {
+        case MANDATORY:
             return ClientAuth.REQUIRE;
-        case WANTED:
+        case OPTIONAL:
             return ClientAuth.OPTIONAL;
         default:
             return ClientAuth.NONE;
