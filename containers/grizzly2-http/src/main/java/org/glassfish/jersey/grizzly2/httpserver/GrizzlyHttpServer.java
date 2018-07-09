@@ -4,8 +4,6 @@ import static javax.ws.rs.JAXRS.Configuration.SSLClientAuthentication.MANDATORY;
 import static javax.ws.rs.JAXRS.Configuration.SSLClientAuthentication.OPTIONAL;
 
 import java.net.URI;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -24,8 +22,7 @@ public final class GrizzlyHttpServer implements Server {
 
     private final HttpServer httpServer;
 
-    GrizzlyHttpServer(final Application application, final JAXRS.Configuration configuration)
-            throws NoSuchAlgorithmException, KeyManagementException {
+    GrizzlyHttpServer(final Application application, final JAXRS.Configuration configuration) {
         final String protocol = configuration.protocol();
         final String host = configuration.host();
         final int port = configuration.port();

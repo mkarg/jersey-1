@@ -16,9 +16,6 @@
 
 package org.glassfish.jersey.grizzly2.httpserver;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-
 import javax.ws.rs.JAXRS;
 import javax.ws.rs.core.Application;
 
@@ -35,13 +32,8 @@ public class GrizzlyHttpServerProvider implements ServerProvider {
     @Override
     public <T extends Server> T createServer(final Class<T> type, final Application application,
             final JAXRS.Configuration configuration) {
-        try {
-            return GrizzlyHttpServer.class == type || Server.class == type
-                    ? type.cast(new GrizzlyHttpServer(application, configuration))
-                    : null;
-        } catch (final NoSuchAlgorithmException | KeyManagementException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return GrizzlyHttpServer.class == type || Server.class == type
+                ? type.cast(new GrizzlyHttpServer(application, configuration))
+                : null;
     }
 }
