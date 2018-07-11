@@ -47,6 +47,15 @@ public final class ServerProperties {
     public static final String HTTP_SERVER_CLASS = "jersey.config.server.httpServerClass";
 
     /**
+     * Whether to automatically startup {@link Server} at bootstrap.
+     * <p>
+     * By default, servers are immediately listening to connections after bootstrap,
+     * so no explicit invocation of {@link Server#start()} is needed.
+     * </p>
+     */
+    public static final String AUTO_START = "jersey.config.server.autoStart";
+
+    /**
      * Defines one or more packages that contain application-specific resources and
      * providers.
      *

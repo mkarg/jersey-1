@@ -3,8 +3,10 @@ package org.glassfish.jersey.grizzly2.httpserver;
 import static javax.ws.rs.JAXRS.Configuration.SSLClientAuthentication.MANDATORY;
 import static javax.ws.rs.JAXRS.Configuration.SSLClientAuthentication.OPTIONAL;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import javax.net.ssl.SSLContext;
@@ -14,6 +16,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spi.Server;
 
 public final class GrizzlyHttpServer implements Server {
@@ -30,13 +33,14 @@ public final class GrizzlyHttpServer implements Server {
         final SSLContext sslContext = configuration.sslContext();
         final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
                 .sslClientAuthentication();
+        final boolean autoStart = (boolean) configuration.property(ServerProperties.AUTO_START);
         final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
 
         this.container = new GrizzlyHttpContainer(application);
         this.httpServer = GrizzlyHttpServerFactory.createHttpServer(uri, this.container, "HTTPS".equals(protocol),
                 new SSLEngineConfigurator(sslContext, false, sslClientAuthentication == OPTIONAL,
                         sslClientAuthentication == MANDATORY),
-                true);
+                autoStart);
     }
 
     @Override
@@ -47,6 +51,17 @@ public final class GrizzlyHttpServer implements Server {
     @Override
     public final int port() {
         return this.httpServer.getListener("grizzly").getPort();
+    }
+
+    @Override
+    public final CompletableFuture<?> start() {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                this.httpServer.start();
+            } catch (final IOException e) {
+                throw new CompletionException(e);
+            }
+        });
     }
 
     @Override

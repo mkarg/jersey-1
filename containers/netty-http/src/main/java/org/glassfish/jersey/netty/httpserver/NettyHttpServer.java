@@ -11,8 +11,10 @@ import javax.ws.rs.JAXRS;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.UriBuilder;
 
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spi.Server;
 
+import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.JdkSslContext;
@@ -21,7 +23,11 @@ public final class NettyHttpServer implements Server {
 
     private final NettyHttpContainer container;
 
-    private final Channel channel;
+    private final ServerBootstrap serverBootstrap;
+
+    private volatile Channel channel;
+
+    private final int port;
 
     NettyHttpServer(final Application application, final JAXRS.Configuration configuration) {
         final String protocol = configuration.protocol();
@@ -31,14 +37,19 @@ public final class NettyHttpServer implements Server {
         final SSLContext sslContext = configuration.sslContext();
         final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
                 .sslClientAuthentication();
+        final boolean autoStart = (boolean) configuration.property(ServerProperties.AUTO_START);
         final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
+        this.port = NettyHttpContainerProvider.getPort(uri);
 
         this.container = new NettyHttpContainer(application);
-        this.channel = NettyHttpContainerProvider.createServer(uri, this.container,
+        this.serverBootstrap = NettyHttpContainerProvider.createServerBootstrap(uri, this.container,
                 "HTTPS".equals(protocol)
                         ? new JdkSslContext(sslContext, false, nettyClientAuth(sslClientAuthentication))
-                        : null,
-                false);
+                        : null);
+
+        if (autoStart) {
+            this.channel = NettyHttpContainerProvider.startServer(port, this.container, this.serverBootstrap, false);
+        }
     }
 
     private static ClientAuth nettyClientAuth(
@@ -60,12 +71,26 @@ public final class NettyHttpServer implements Server {
 
     @Override
     public final int port() {
-        return ((InetSocketAddress) this.channel.localAddress()).getPort();
+        return this.channel == null ? this.port : ((InetSocketAddress) this.channel.localAddress()).getPort();
+    }
+
+    @Override
+    public final CompletionStage<?> start() {
+        return this.channel != null ? CompletableFuture.completedFuture(this.channel)
+                : CompletableFuture.supplyAsync(() -> {
+                    try {
+                        this.channel = NettyHttpContainerProvider.startServer(this.port, this.container,
+                                this.serverBootstrap, false);
+                        return this.channel;
+                    } catch (final Exception e) {
+                        throw new CompletionException(e);
+                    }
+                });
     }
 
     @Override
     public final CompletionStage<?> stop() {
-        return CompletableFuture.supplyAsync(() -> {
+        return this.channel == null ? CompletableFuture.completedFuture(null) : CompletableFuture.supplyAsync(() -> {
             try {
                 return this.channel.close().get();
             } catch (final Exception e) {
@@ -76,7 +101,7 @@ public final class NettyHttpServer implements Server {
 
     @Override
     public final <T> T unwrap(final Class<T> nativeClass) {
-        return nativeClass.cast(this.channel);
+        return nativeClass.cast(this.channel == null ? this.serverBootstrap : this.channel);
     }
 
 }

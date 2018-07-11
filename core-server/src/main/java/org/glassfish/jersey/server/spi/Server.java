@@ -8,6 +8,8 @@ public interface Server {
 
     public int port();
 
+    public CompletionStage<?> start();
+
     public CompletionStage<?> stop();
 
     public <T> T unwrap(Class<T> nativeClass);

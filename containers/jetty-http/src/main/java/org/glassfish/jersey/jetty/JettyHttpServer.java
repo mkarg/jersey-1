@@ -16,6 +16,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.jersey.server.ContainerFactory;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spi.Server;
 
 public final class JettyHttpServer implements Server {
@@ -32,6 +33,7 @@ public final class JettyHttpServer implements Server {
         final SSLContext sslContext = configuration.sslContext();
         final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
                 .sslClientAuthentication();
+        final boolean autoStart = (boolean) configuration.property(ServerProperties.AUTO_START);
         final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
 
         final SslContextFactory sslContextFactory;
@@ -44,7 +46,7 @@ public final class JettyHttpServer implements Server {
             sslContextFactory = null;
         }
         this.container = ContainerFactory.createContainer(JettyHttpContainer.class, application);
-        this.httpServer = JettyHttpContainerFactory.createServer(uri, sslContextFactory, this.container, true);
+        this.httpServer = JettyHttpContainerFactory.createServer(uri, sslContextFactory, this.container, autoStart);
     }
 
     @Override
@@ -55,6 +57,17 @@ public final class JettyHttpServer implements Server {
     @Override
     public final int port() {
         return ((ServerConnector) this.httpServer.getConnectors()[0]).getPort();
+    }
+
+    @Override
+    public final CompletionStage<?> start() {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                this.httpServer.start();
+            } catch (final Exception e) {
+                throw new CompletionException(e);
+            }
+        });
     }
 
     @Override

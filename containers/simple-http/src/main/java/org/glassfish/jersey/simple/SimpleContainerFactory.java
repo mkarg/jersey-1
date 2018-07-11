@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -150,7 +151,7 @@ public final class SimpleContainerFactory {
             public SocketProcessor get() throws IOException {
                 return new ContainerSocketProcessor(container);
             }
-        });
+        }, true);
     }
 
     /**
@@ -164,12 +165,13 @@ public final class SimpleContainerFactory {
      * @param context   this is the SSL context used for SSL connections.
      * @param config    the resource configuration.
      * @param sslClientAuthentication Secure socket client authentication policy.
+     * @param start whether the server shall listen to connections immediately
      * @return the closeable connection, with the endpoint started.
      * @throws ProcessingException      thrown when problems during server creation.
      * @throws IllegalArgumentException if {@code address} is {@code null}.
      */
     public static SimpleServer create(final URI address, final SSLContext context,
-            final SSLClientAuthentication sslClientAuthentication, final SimpleContainer container) {
+            final SSLClientAuthentication sslClientAuthentication, final SimpleContainer container, final boolean start) {
         return _create(address, context, container, new UnsafeValue<SocketProcessor, IOException>() {
             @Override
             public SocketProcessor get() throws IOException {
@@ -195,7 +197,7 @@ public final class SimpleContainerFactory {
                     }
                 };
             }
-        });
+        }, start);
     }
 
     /**
@@ -247,12 +249,13 @@ public final class SimpleContainerFactory {
             public SocketProcessor get() throws IOException {
                 return new ContainerSocketProcessor(container, count, select);
             }
-        });
+        }, true);
     }
 
     private static SimpleServer _create(final URI address, final SSLContext context,
                                         final SimpleContainer container,
-                                        final UnsafeValue<SocketProcessor, IOException> serverProvider)
+                                        final UnsafeValue<SocketProcessor, IOException> serverProvider,
+                                        final boolean start)
             throws ProcessingException {
         if (address == null) {
             throw new IllegalArgumentException(LocalizationMessages.URI_CANNOT_BE_NULL());
@@ -282,22 +285,26 @@ public final class SimpleContainerFactory {
             final SocketProcessor server = serverProvider.get();
             connection = new SocketConnection(server, analyzer);
 
+            final SimpleServer simpleServer = new SimpleServer() {
+                private InetSocketAddress socketAddr = listen;
 
-            final SocketAddress socketAddr = connection.connect(listen, context);
-            container.onServerStart();
-
-            return new SimpleServer() {
+                @Override
+                public final void start() throws IOException {
+                    this.socketAddr = (InetSocketAddress) connection.connect(listen, context);
+                    container.onServerStart();
+                }
 
                 @Override
                 public void close() throws IOException {
                     container.onServerStop();
                     analyzer.stop();
                     connection.close();
+                    this.socketAddr = listen;
                 }
 
                 @Override
                 public int getPort() {
-                    return ((InetSocketAddress) socketAddr).getPort();
+                    return this.socketAddr.getPort();
                 }
 
                 @Override
@@ -314,6 +321,12 @@ public final class SimpleContainerFactory {
                     }
                 }
             };
+
+            if (start) {
+                simpleServer.start();
+            }
+
+            return simpleServer;
         } catch (final IOException ex) {
             throw new ProcessingException(LocalizationMessages.ERROR_WHEN_CREATING_SERVER(), ex);
         }

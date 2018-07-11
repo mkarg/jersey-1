@@ -10,6 +10,7 @@ import javax.ws.rs.JAXRS;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.UriBuilder;
 
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spi.Server;
 
 public final class SimpleHttpServer implements Server {
@@ -26,11 +27,12 @@ public final class SimpleHttpServer implements Server {
         final SSLContext sslContext = configuration.sslContext();
         final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
                 .sslClientAuthentication();
+        final boolean autoStart = (boolean) configuration.property(ServerProperties.AUTO_START);
         final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
 
         this.container = new SimpleContainer(application);
         this.simpleServer = SimpleContainerFactory.create(uri, "HTTPS".equals(protocol) ? sslContext : null,
-                sslClientAuthentication, this.container);
+                sslClientAuthentication, this.container, autoStart);
     }
 
     @Override
@@ -41,6 +43,17 @@ public final class SimpleHttpServer implements Server {
     @Override
     public final int port() {
         return this.simpleServer.getPort();
+    }
+
+    @Override
+    public final CompletionStage<?> start() {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                this.simpleServer.start();
+            } catch (final Exception e) {
+                throw new CompletionException(e);
+            }
+        });
     }
 
     @Override

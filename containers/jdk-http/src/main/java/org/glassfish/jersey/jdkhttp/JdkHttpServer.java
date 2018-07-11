@@ -12,6 +12,7 @@ import javax.ws.rs.JAXRS;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.UriBuilder;
 
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spi.Server;
 
 import com.sun.net.httpserver.HttpServer;
@@ -30,11 +31,12 @@ public final class JdkHttpServer implements Server {
         final SSLContext sslContext = configuration.sslContext();
         final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
                 .sslClientAuthentication();
+        final boolean autoStart = (boolean) configuration.property(ServerProperties.AUTO_START);
         final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
 
         this.container = new JdkHttpHandlerContainer(application);
         this.httpServer = JdkHttpServerFactory.createHttpServer(uri, this.container, sslContext,
-                sslClientAuthentication == OPTIONAL, sslClientAuthentication == MANDATORY, true);
+                sslClientAuthentication == OPTIONAL, sslClientAuthentication == MANDATORY, autoStart);
     }
 
     @Override
@@ -45,6 +47,11 @@ public final class JdkHttpServer implements Server {
     @Override
     public final int port() {
         return this.httpServer.getAddress().getPort();
+    }
+
+    @Override
+    public final CompletionStage<?> start() {
+        return CompletableFuture.runAsync(this.httpServer::start);
     }
 
     @Override

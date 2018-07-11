@@ -16,6 +16,8 @@
 
 package org.glassfish.jersey.server.internal;
 
+import static java.lang.Boolean.TRUE;
+
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,6 +81,7 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
                 }
                 this.properties.put(JAXRS.Configuration.SSL_CLIENT_AUTHENTICATION,
                         JAXRS.Configuration.SSLClientAuthentication.NONE);
+                this.properties.put(ServerProperties.AUTO_START, TRUE);
             }
 
             @Override
@@ -133,7 +136,8 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
 
                 @Override
                 public final <T> T unwrap(final Class<T> nativeClass) {
-                    return server.unwrap(nativeClass);
+                    return nativeClass.isInstance(server) ? nativeClass.cast(server)
+                            : server.unwrap(nativeClass);
                 }
             };
         });
