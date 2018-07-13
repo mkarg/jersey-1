@@ -110,9 +110,9 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
             final Class<Server> httpServerClass = (Class<Server>) configuration
                     .property(ServerProperties.HTTP_SERVER_CLASS);
 
-            final Server server = ServerFactory.createServer(httpServerClass, application, configuration);
-
             return new JAXRS.Instance() {
+                private final Server server = ServerFactory.createServer(httpServerClass, application, configuration);
+
                 @Override
                 public final Configuration configuration() {
                     return new JAXRS.Configuration() {
@@ -125,7 +125,7 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
 
                 @Override
                 public final CompletionStage<StopResult> stop() {
-                    return server.stop().thenApply(nativeResult -> new StopResult() {
+                    return this.server.stop().thenApply(nativeResult -> new StopResult() {
 
                         @Override
                         public final <T> T unwrap(final Class<T> nativeClass) {
@@ -136,8 +136,8 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
 
                 @Override
                 public final <T> T unwrap(final Class<T> nativeClass) {
-                    return nativeClass.isInstance(server) ? nativeClass.cast(server)
-                            : server.unwrap(nativeClass);
+                    return nativeClass.isInstance(this.server) ? nativeClass.cast(this.server)
+                            : this.server.unwrap(nativeClass);
                 }
             };
         });
