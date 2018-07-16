@@ -179,19 +179,21 @@ public final class SimpleContainerFactory {
                     @Override
                     public final void process(final Socket socket) throws IOException {
                         final SSLEngine sslEngine = socket.getEngine();
-                        switch (sslClientAuthentication) {
-                        case MANDATORY: {
-                            sslEngine.setNeedClientAuth(true);
-                            break;
-                        }
-                        case OPTIONAL: {
-                            sslEngine.setWantClientAuth(true);
-                            break;
-                        }
-                        default: {
-                            sslEngine.setNeedClientAuth(false);
-                            break;
-                        }
+                        if (sslEngine != null) {
+                            switch (sslClientAuthentication) {
+                            case MANDATORY: {
+                                sslEngine.setNeedClientAuth(true);
+                                break;
+                            }
+                            case OPTIONAL: {
+                                sslEngine.setWantClientAuth(true);
+                                break;
+                            }
+                            default: {
+                                sslEngine.setNeedClientAuth(false);
+                                break;
+                            }
+                            }
                         }
                         super.process(socket);
                     }
