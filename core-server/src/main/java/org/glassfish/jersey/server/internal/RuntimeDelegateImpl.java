@@ -33,6 +33,7 @@ import javax.ws.rs.JAXRS.Configuration.Builder;
 import javax.ws.rs.JAXRS.Configuration.SSLClientAuthentication;
 import javax.ws.rs.core.Application;
 
+import org.eclipse.microprofile.config.Config;
 import org.glassfish.jersey.internal.AbstractRuntimeDelegate;
 import org.glassfish.jersey.message.internal.MessagingBinders;
 import org.glassfish.jersey.server.ContainerFactory;
@@ -113,6 +114,19 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
                 PROPERTY_TYPES.forEach((propertyName, propertyType) -> configProvider.apply(propertyName, (Class<T>) propertyType)
                         .ifPresent(propertyValue -> this.properties.put(propertyName, propertyValue)));
                 return this;
+            }
+
+            @Override
+            public final Builder from(final Object externalConfig) {
+                if (externalConfig instanceof Config) {
+                    return this.from((Config) externalConfig);
+                }
+
+                return this;
+            }
+
+            private final Builder from(final Config config) {
+                return this.from(config::getOptionalValue);
             }
 
             @Override
