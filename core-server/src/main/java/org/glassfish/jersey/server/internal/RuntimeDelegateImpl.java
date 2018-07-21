@@ -21,12 +21,16 @@ import static java.lang.Boolean.TRUE;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.JAXRS;
 import javax.ws.rs.JAXRS.Configuration;
+import javax.ws.rs.JAXRS.Configuration.Builder;
+import javax.ws.rs.JAXRS.Configuration.SSLClientAuthentication;
 import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.internal.AbstractRuntimeDelegate;
@@ -63,6 +67,19 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
         return ContainerFactory.createContainer(endpointType, application);
     }
 
+    private static final Map<String, Class<?>> PROPERTY_TYPES = new HashMap<>();
+
+    static {
+        PROPERTY_TYPES.put(JAXRS.Configuration.PROTOCOL, String.class);
+        PROPERTY_TYPES.put(JAXRS.Configuration.HOST, String.class);
+        PROPERTY_TYPES.put(JAXRS.Configuration.PORT, Integer.class);
+        PROPERTY_TYPES.put(JAXRS.Configuration.ROOT_PATH, String.class);
+        PROPERTY_TYPES.put(JAXRS.Configuration.SSL_CONTEXT, SSLContext.class);
+        PROPERTY_TYPES.put(JAXRS.Configuration.SSL_CLIENT_AUTHENTICATION, SSLClientAuthentication.class);
+        PROPERTY_TYPES.put(ServerProperties.HTTP_SERVER_CLASS, Class.class);
+        PROPERTY_TYPES.put(ServerProperties.AUTO_START, Boolean.class);
+    }
+
     @Override
     public JAXRS.Configuration.Builder createConfigurationBuilder() {
         return new JAXRS.Configuration.Builder() {
@@ -87,6 +104,14 @@ public class RuntimeDelegateImpl extends AbstractRuntimeDelegate {
             @Override
             public final JAXRS.Configuration.Builder property(final String name, final Object value) {
                 this.properties.put(name, value);
+                return this;
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public final <T> Builder from(final BiFunction<String, Class<T>, Optional<T>> configProvider) {
+                PROPERTY_TYPES.forEach((propertyName, propertyType) -> configProvider.apply(propertyName, (Class<T>) propertyType)
+                        .ifPresent(propertyValue -> this.properties.put(propertyName, propertyValue)));
                 return this;
             }
 
