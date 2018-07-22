@@ -56,6 +56,15 @@ public final class ServerProperties {
     public static final String AUTO_START = "jersey.config.server.autoStart";
 
     /**
+     * Allows to explicitly provide an injection context.
+     * <p>
+     * Default value is {@code null}, i. e. Jersey will create a new context on the
+     * fly.
+     * </p>
+     */
+    public static final String PARENT_CONTEXT = "jersey.config.server.parentContext";
+
+    /**
      * Defines one or more packages that contain application-specific resources and
      * providers.
      *

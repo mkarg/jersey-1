@@ -61,9 +61,19 @@ public class CdiSeInjectionManager implements InjectionManager {
         }
     };
 
+    private SeContainerInitializer containerInitializer;
+
     private SeContainer container;
 
     private BeanManager beanManager;
+
+    public CdiSeInjectionManager() {
+        this(null);
+    }
+
+    public CdiSeInjectionManager(final SeContainerInitializer containerInitializer) {
+        this.containerInitializer = containerInitializer;
+    }
 
     @Override
     public void register(Binding binding) {
@@ -224,9 +234,12 @@ public class CdiSeInjectionManager implements InjectionManager {
         bindings.bind(Bindings.service(this).to(InjectionManager.class));
         bindings.install(new ContextInjectionResolverImpl.Binder(this::getBeanManager));
 
-        SeContainerInitializer containerInitializer = SeContainerInitializer.newInstance();
-        containerInitializer.addExtensions(new SeBeanRegisterExtension(bindings));
-        this.container = containerInitializer.initialize();
+        if (this.containerInitializer == null) {
+            this.containerInitializer = SeContainerInitializer.newInstance();
+        }
+
+        this.containerInitializer.addExtensions(new SeBeanRegisterExtension(bindings));
+        this.container = this.containerInitializer.initialize();
         this.beanManager = container.getBeanManager();
     }
 

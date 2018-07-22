@@ -17,6 +17,7 @@
 package org.glassfish.jersey.inject.cdi.se;
 
 import javax.annotation.Priority;
+import javax.enterprise.inject.se.SeContainerInitializer;
 
 import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.inject.InjectionManagerFactory;
@@ -31,6 +32,10 @@ public class CdiSeInjectionManagerFactory implements InjectionManagerFactory {
 
     @Override
     public InjectionManager create(Object parent) {
+        if (parent instanceof SeContainerInitializer) {
+            return new CdiSeInjectionManager((SeContainerInitializer) parent);
+        }
+
         return new CdiSeInjectionManager();
     }
 }

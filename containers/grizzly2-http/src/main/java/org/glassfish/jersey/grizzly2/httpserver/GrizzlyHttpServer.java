@@ -34,9 +34,11 @@ public final class GrizzlyHttpServer implements Server {
         final JAXRS.Configuration.SSLClientAuthentication sslClientAuthentication = configuration
                 .sslClientAuthentication();
         final boolean autoStart = (boolean) configuration.property(ServerProperties.AUTO_START);
+        final Object parentContext = configuration.property(ServerProperties.PARENT_CONTEXT);
+        final Object containerInitializer = configuration.property(JAXRS.Configuration.CDI_CONTAINER_INITIALIZER);
         final URI uri = UriBuilder.fromUri(protocol.toLowerCase() + "://" + host).port(port).path(rootPath).build();
 
-        this.container = new GrizzlyHttpContainer(application);
+        this.container = new GrizzlyHttpContainer(application, parentContext == null ? containerInitializer : parentContext);
         this.httpServer = GrizzlyHttpServerFactory.createHttpServer(uri, this.container, "HTTPS".equals(protocol),
                 new SSLEngineConfigurator(sslContext, false, sslClientAuthentication == OPTIONAL,
                         sslClientAuthentication == MANDATORY),
