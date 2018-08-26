@@ -47,20 +47,24 @@ public abstract class AbstractJdkHttpServerTester {
      * @return The HTTP port of the URI
      */
     protected final int getPort() {
+        if (server != null) {
+            return server.getAddress().getPort();
+        }
+
         final String value =
                 AccessController.doPrivileged(PropertiesHelper.getSystemProperty("jersey.config.test.container.port"));
         if (value != null) {
 
             try {
                 final int i = Integer.parseInt(value);
-                if (i <= 0) {
-                    throw new NumberFormatException("Value not positive.");
+                if (i < 0) {
+                    throw new NumberFormatException("Value is negative.");
                 }
                 return i;
             } catch (NumberFormatException e) {
                 LOGGER.log(Level.CONFIG,
                         "Value of 'jersey.config.test.container.port'"
-                                + " property is not a valid positive integer [" + value + "]."
+                                + " property is not a valid non-negative integer [" + value + "]."
                                 + " Reverting to default [" + DEFAULT_PORT + "].",
                         e);
             }
@@ -79,14 +83,14 @@ public abstract class AbstractJdkHttpServerTester {
         config.register(LoggingFeature.class);
         final URI baseUri = getBaseUri();
         server = JdkHttpServerFactory.createHttpServer(baseUri, config);
-        LOGGER.log(Level.INFO, "jdk-http server started on base uri: " + baseUri);
+        LOGGER.log(Level.INFO, "jdk-http server started on base uri: " + getBaseUri());
     }
 
     public void startServer(ResourceConfig config) {
         final URI baseUri = getBaseUri();
         config.register(LoggingFeature.class);
         server = JdkHttpServerFactory.createHttpServer(baseUri, config);
-        LOGGER.log(Level.INFO, "jdk-http server started on base uri: " + baseUri);
+        LOGGER.log(Level.INFO, "jdk-http server started on base uri: " + getBaseUri());
     }
 
     public URI getBaseUri() {
