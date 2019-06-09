@@ -77,7 +77,7 @@ public final class JettyHttpServerProviderTest {
             case JAXRS.Configuration.PORT:
                 return getPort();
             case JAXRS.Configuration.ROOT_PATH:
-                return "/";
+                return "rootPath";
             case JAXRS.Configuration.SSL_CLIENT_AUTHENTICATION:
                 return SSLClientAuthentication.NONE;
             case JAXRS.Configuration.SSL_CONTEXT:
@@ -101,8 +101,8 @@ public final class JettyHttpServerProviderTest {
         final Container container = server.container();
         final int port = server.port();
         final String entity = ClientBuilder.newClient()
-                .target(UriBuilder.newInstance().scheme("http").host("localhost").port(port).build()).request()
-                .get(String.class);
+                .target(UriBuilder.newInstance().scheme("http").host("localhost").port(port).path("rootPath")
+                .build()).request().get(String.class);
         final CompletionStage<?> stop = server.stop();
         final Object stopResult = stop.toCompletableFuture().get();
 

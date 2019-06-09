@@ -172,7 +172,7 @@ public final class JettyHttpContainer extends AbstractHandler implements Contain
 
     private URI getRequestUri(final Request request, final URI baseUri) {
         try {
-            final String serverAddress = getServerAddress(baseUri);
+            final String serverAddress = getServerAddress(request);
             String uri = request.getRequestURI();
 
             final String queryString = request.getQueryString();
@@ -186,12 +186,8 @@ public final class JettyHttpContainer extends AbstractHandler implements Contain
         }
     }
 
-    private String getServerAddress(URI baseUri) {
-        String serverAddress = baseUri.toString();
-        if (serverAddress.charAt(serverAddress.length() - 1) == '/') {
-            return serverAddress.substring(0, serverAddress.length() - 1);
-        }
-        return serverAddress;
+    private String getServerAddress(final Request request) throws URISyntaxException {
+        return new URI(request.getScheme(), null,  request.getServerName(), request.getServerPort(), null, null, null).toString();
     }
 
     private SecurityContext getSecurityContext(final Request request) {

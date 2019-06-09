@@ -35,6 +35,8 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
@@ -272,7 +274,14 @@ public final class JettyHttpContainerFactory {
             server.setConnectors(new Connector[]{http});
         }
         if (handler != null) {
-            server.setHandler(handler);
+            final String rootPath = uri.getPath();
+            if (!rootPath.isEmpty()) {
+                final HandlerWrapper contextHandler = new ContextHandler(rootPath);
+                contextHandler.setHandler(handler);
+                server.setHandler(contextHandler);
+            } else {
+                server.setHandler(handler);
+            }
         }
 
         if (start) {
