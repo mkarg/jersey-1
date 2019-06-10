@@ -88,7 +88,7 @@ public class VFSSchemeResourceFinderTest {
              Closeable mount = VFS.mountZip(VFS.getChild(jaxRsApiPath), mountDir, provider)) {
 
             ResourceFinder finder = new VfsSchemeResourceFinderFactory()
-                    .create(new URI(mountDir.toURI().toString() + "/javax/ws/rs"), true);
+                    .create(new URI(mountDir.toURI().toString() + "/jakarta.ws.rs"), true);
 
             int scannedEntryCount = 0;
             while (finder.hasNext()) {
@@ -104,7 +104,7 @@ public class VFSSchemeResourceFinderTest {
                 }
             }
 
-            assertThat("Failed to enumerate all contents of javax.ws.rs-api.", scannedEntryCount, equalTo(actualEntries));
+            assertThat("Failed to enumerate all contents of jakarta.ws.rs-api.", scannedEntryCount, equalTo(actualEntries));
         } finally {
             executor.shutdownNow();
         }

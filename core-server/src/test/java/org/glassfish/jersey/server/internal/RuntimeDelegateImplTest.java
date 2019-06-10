@@ -37,10 +37,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 
 import javax.net.ssl.SSLContext;
-import javax.ws.rs.JAXRS;
-import javax.ws.rs.JAXRS.Configuration;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.ext.RuntimeDelegate;
+import jakarta.ws.rs.JAXRS;
+import jakarta.ws.rs.JAXRS.Configuration;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.ext.RuntimeDelegate;
 
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;

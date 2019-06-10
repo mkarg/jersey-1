@@ -18,8 +18,8 @@ package org.glassfish.jersey.server.internal.inject;
 
 import java.util.concurrent.ExecutionException;
 
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.Request;
+import jakarta.ws.rs.core.Cookie;
+import jakarta.ws.rs.core.Request;
 
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ContainerRequest;
