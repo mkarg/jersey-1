@@ -17,6 +17,7 @@
 package org.glassfish.jersey.netty.httpserver;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Application;
@@ -102,7 +103,7 @@ public class NettyHttpContainerProvider implements ContainerProvider {
             } else {
                 return ch;
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | URISyntaxException e) {
             throw new ProcessingException(e);
         }
     }
@@ -167,7 +168,7 @@ public class NettyHttpContainerProvider implements ContainerProvider {
 
             return ch;
 
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | URISyntaxException e) {
             throw new ProcessingException(e);
         }
     }

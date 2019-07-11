@@ -17,6 +17,7 @@
 package org.glassfish.jersey.netty.httpserver;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
@@ -53,8 +54,9 @@ class JerseyServerInitializer extends ChannelInitializer<SocketChannel> {
      * @param baseUri   base {@link URI} of the container (includes context path, if any).
      * @param sslCtx    SSL context.
      * @param container Netty container implementation.
+     * @throws URISyntaxException
      */
-    public JerseyServerInitializer(URI baseUri, SslContext sslCtx, NettyHttpContainer container) {
+    public JerseyServerInitializer(URI baseUri, SslContext sslCtx, NettyHttpContainer container) throws URISyntaxException {
         this(baseUri, sslCtx, container, false);
     }
 
@@ -65,9 +67,12 @@ class JerseyServerInitializer extends ChannelInitializer<SocketChannel> {
      * @param sslCtx    SSL context.
      * @param container Netty container implementation.
      * @param http2     Http/2 protocol support.
+     * @throws URISyntaxException
      */
-    public JerseyServerInitializer(URI baseUri, SslContext sslCtx, NettyHttpContainer container, boolean http2) {
-        this.baseUri = baseUri;
+    public JerseyServerInitializer(URI baseUri, SslContext sslCtx, NettyHttpContainer container, boolean http2)
+            throws URISyntaxException {
+        this.baseUri = baseUri.getPath().endsWith("/") ? baseUri : new URI(baseUri.getScheme(), baseUri.getUserInfo(),
+                baseUri.getHost(), baseUri.getPort(), baseUri.getPath() + '/', baseUri.getQuery(), baseUri.getFragment());
         this.sslCtx = sslCtx;
         this.container = container;
         this.http2 = http2;

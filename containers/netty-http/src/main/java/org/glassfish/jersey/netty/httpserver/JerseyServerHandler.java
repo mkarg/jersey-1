@@ -19,6 +19,7 @@ package org.glassfish.jersey.netty.httpserver;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.HashMap;
@@ -118,7 +119,8 @@ class JerseyServerHandler extends ChannelInboundHandlerAdapter {
      */
     private ContainerRequest createContainerRequest(ChannelHandlerContext ctx, HttpRequest req) {
 
-        String s = req.uri().startsWith("/") ? req.uri().substring(1) : req.uri();
+        final String basePath = baseUri.getPath();
+        final String s = req.uri().startsWith(basePath) ? req.uri().substring(basePath.length()) : req.uri();
         URI requestUri = URI.create(baseUri + ContainerUtils.encodeUnsafeCharacters(s));
 
         ContainerRequest requestContext = new ContainerRequest(
